@@ -24,15 +24,94 @@ ggplot(data = mpg) +
 
 What are the advantages to using faceting instead of the colour aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset?
 
+The advantage is a different overview, it will show by the determined variable changes easier, like in the example by every class and the difference of the amount of data in 2seater versus compact is easily seen. The disadvantage might be that comparing them is more difficult as it would be easier in one graph by color for example. As well as in the case of having too many variables, so there will be too many subplots to analyze. In a large dataset the faceting should have a smaller amount per subgraph, while on one graph data would overlap much more. 
+For color aesthetic the disadvatnages would be having too similar colors in the case of too many variables and overlapping on the same coordinate set. 
+
 - Recreate the R code necessary to generate the following graphs.
 
 ```{r, out.width=200}
 knitr::include_graphics(paste0("plots/fig", 1:6, ".png"))
 ```
 
+Graph1
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))+
+  geom_smooth(mapping = aes(x = displ, y = hwy),se=FALSE)
+```
+Graph2
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))+
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv),se=FALSE)
+```
+Graph3
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color=drv))+
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv, color=drv),se=FALSE)
+```
+Graph4
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color=drv))+
+  geom_smooth(mapping = aes(x = displ, y = hwy,),se=FALSE)
+```
+Graph5
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color=drv))+
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv, linetype=drv),se=FALSE)
+```
+Graph6
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point(size = 3, color = "white") +
+  geom_point(aes(colour = drv))
+```
+
 - Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?
 
+Geoms and stats that are used in concert.
+
+geom & stat 
+geom_bar() & stat_count()
+geom_bin2d() & stat_bin_2d()
+geom_boxplot() & stat_boxplot()
+geom_contour() & stat_contour()
+geom_count() & stat_sum()
+geom_density() & stat_density()
+geom_density_2d() & stat_density_2d()
+geom_hex() & stat_hex()
+geom_freqpoly() & stat_bin()
+geom_histogram() & stat_bin()
+geom_qq_line() & stat_qq_line()
+geom_qq() & stat_qq()
+geom_quantile() & stat_quantile()
+geom_smooth() & stat_smooth()
+geom_violin() & stat_violin()
+geom_sf() & stat_sf()
+
+They mostly have the same name after stat or geom, with a few expections like geom_bar and stat_count. 
+
+Also, the pairs of geoms and stats that are used in concert almost always have each other as the default stat (for a geom) or geom (for a stat).
+
 - Compare and contrast geom_jitter() with geom_count().
+
+Geom geom_jitter adds random variation to the locations points of the graph, used for changing the location to reduce overlapping in the most case. And it shanges the x and y coordinate of the point. 
+
+For example:
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_jitter()
+```
+
+Geom geom_count sizes the points to the number of observations - so the point size will cahnge, but the location remains the same. Good to use when a lot of points have the same coordinate, but can cause issues when there are too many observations the same so the large point will overlap with the small one, which had a few observations.  
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_count()
+```
 
 - What does the plot below tell you about the relationship between city and highway mpg (fuel consumption)? Why is coord_fixed() important? What does geom_abline() do?
 
@@ -42,6 +121,11 @@ ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
   geom_abline() +
   coord_fixed()
 ```
+
+coord_fixed ensures that the line produced by geom_abline is at a 45-degree angle, giving 1:1 fixed line, where or example 10 miles in city would be 10 miles on highway. This line helps to see that on the highway you get better milage as all the dots are above it. 
+
+Coord_fixed fixes the x and y axis so the scale is the same and makes it more easily comparable. 
+
 
 - What is the default geom associated with stat_summary()?
 
@@ -54,13 +138,39 @@ ggplot(data = diamonds) +
     fun.y = median
   )
 ```
+The default geom for stat_summary is geom_pointrange.
 
 How could you rewrite the previous plot to use that geom function instead of the stat function?
  
- 
+```{r}
+ggplot(data = diamonds) +
+  geom_pointrange(
+    mapping = aes(x = cut, y = depth),
+    stat = "summary",
+    fun.ymin = min,
+    fun.ymax = max,
+    fun.y = median
+  )
+```
+
 - What does geom_col() do? How is it different to geom_bar()?
 
+Geom_col has different default stat than geom_bar, geom_col uses stat_identity and geom_bar uses stat_bin by default.
+
+Geom_col uses x and y, which is used for the bar height.While geom_bar needs only x and then the stat counts the number of observations for each x value. The `y` aesthetic uses the values of these counts.
+
 - What variables does stat_smooth() compute? What parameters control its behaviour?
+
+Stat_smooth calculates the following variables:
+
+y - predicted value
+ymin - lower value of the confidence interval
+ymax - upper value of the confidence interval
+se - standard error
+
+The parameters that control the behavior of stat_smooth are:
+
+method, formula and na.rm
 
 - In our proportion bar chart, we need to set group = 1. Why? In other words what is the problem with these two graphs?
 ```{r}
@@ -69,3 +179,7 @@ ggplot(data = diamonds) +
 ggplot(data = diamonds) + 
   geom_bar(mapping = aes(x = cut, fill = color, y = ..prop..))
 ```
+If group = 1 is not included, then all the bars in the plot will have the same height, a height of 1.
+The function geom_bar assumes that the groups are equal to the  x values since the stat computes the counts within the group.
+
+Problem is that in this presentation the graphs give no information, they all look the same as the proportions are calculated within the groups. 
